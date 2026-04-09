@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-vintage-cream text-vintage-charcoal font-sans;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+.vintage-border {
+  border: 2px solid #5C4033;
+  border-radius: 4px;
+}
+
+.vintage-button {
+  background-color: #5C4033;
+  color: #F5F0E6;
+  padding: 0.75rem 1.5rem;
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 2px solid #3D2914;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vintage-button:hover {
+  background-color: #3D2914;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(92, 64, 51, 0.3);
+}
+
+.vintage-button-secondary {
+  background-color: transparent;
+  color: #5C4033;
+  padding: 0.75rem 1.5rem;
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 2px solid #5C4033;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vintage-button-secondary:hover {
+  background-color: #5C4033;
+  color: #F5F0E6;
+}
+
+.vintage-input {
+  background-color: white;
+  border: 2px solid #D4A574;
+  padding: 0.75rem 1rem;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 1rem;
+  width: 100%;
+  transition: border-color 0.3s ease;
+}
+
+.vintage-input:focus {
+  outline: none;
+  border-color: #5C4033;
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.2);
+}
+
+.vintage-select {
+  background-color: white;
+  border: 2px solid #D4A574;
+  padding: 0.75rem 1rem;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 1rem;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.vintage-select:focus {
+  outline: none;
+  border-color: #5C4033;
+}
+
+.vintage-card {
+  background-color: white;
+  border: 2px solid #D4A574;
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0 #D4A574;
+}
+
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ornament-divider::before,
+.ornament-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C9A227, transparent);
+}
+
+.ornament-divider span {
+  color: #C9A227;
+  font-size: 1.5rem;
+}
