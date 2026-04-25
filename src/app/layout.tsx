@@ -1,9 +1,20 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair-display",
+});
+
 export const metadata: Metadata = {
-  title: "Classic Cycles | Custom Bike Repair Shop",
-  description: "Expert vintage bike repairs with craftsmanship and care. Book your appointment today.",
+  title: "Ezcaray Custom Bikes | Taller de Motos Clásicas y Custom",
+  description: "Ezcaray Custom Bikes ofrece reparación experta de motos clásicas, custom y vintage con oficio y cuidado artesanal.",
 };
 
 export default function RootLayout({
@@ -12,13 +23,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="min-h-screen bg-vintage-cream">
+    <html lang="es">
+      <body
+        suppressHydrationWarning
+        className={`${inter.variable} ${playfairDisplay.variable} min-h-screen bg-vintage-cream`}
+      >
+        <a href="#main-content" className="skip-link">
+          Ir al contenido principal
+        </a>
         {children}
       </body>
     </html>

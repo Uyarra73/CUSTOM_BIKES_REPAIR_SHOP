@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Check, Calendar, ShipWheel, Wrench, User, Mail, Phone } from "lucide-react";
-import { bikeBrands, services, Service } from "@/data/bikes";
+import { bikeBrands, services } from "@/data/bikes";
 
 interface BookingData {
   brand: string;
@@ -17,10 +17,17 @@ interface BookingData {
 }
 
 const timeSlots = [
-  "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", 
-  "11:00 AM", "11:30 AM", "1:00 PM", "1:30 PM",
-  "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM"
+  "09:00", "09:30", "10:00", "10:30",
+  "11:00", "11:30", "13:00", "13:30",
+  "14:00", "14:30", "15:00", "15:30", "16:00"
 ];
+
+function formatBookingDate(date: string, options: Intl.DateTimeFormatOptions): string {
+  const [year, month, day] = date.split("-").map(Number);
+  const parsedDate = new Date(year, (month ?? 1) - 1, day ?? 1);
+
+  return new Intl.DateTimeFormat("es-ES", options).format(parsedDate);
+}
 
 export default function BookingForm() {
   const [step, setStep] = useState(1);
@@ -76,7 +83,7 @@ export default function BookingForm() {
           phone: bookingData.phone,
           brand: bookingData.brand,
           model: bookingData.model,
-          service: selectedService?.name,
+          serviceId: bookingData.service,
           date: bookingData.date,
           time: bookingData.time,
           description: bookingData.description,
@@ -84,13 +91,13 @@ export default function BookingForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send confirmation email");
+        throw new Error("No se pudo enviar el correo de confirmación");
       }
 
       setSubmitted(true);
     } catch (err) {
-      setError("There was a problem sending your confirmation email. Please call us at (555) 987-6543.");
-      console.error("Booking error:", err);
+      setError("Ha habido un problema al enviar el correo de confirmación. Llámanos al (555) 987-6543.");
+      console.error("Error de reserva:", err);
     } finally {
       setIsLoading(false);
     }
@@ -98,31 +105,35 @@ export default function BookingForm() {
 
   const getToday = () => {
     const today = new Date();
-    return today.toISOString().split("T")[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
 
   if (submitted) {
     return (
       <div className="vintage-card max-w-2xl mx-auto text-center py-8 sm:py-12 px-4 sm:px-6">
         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-vintage-sage rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-          <Check className="w-8 sm:w-10 h-8 sm:h-10 text-white" />
+          <Check className="w-8 sm:w-10 h-8 sm:h-10 text-white" aria-hidden="true" />
         </div>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-vintage-darkBrown mb-4">
-          Appointment Confirmed!
+          ¡Cita Confirmada!
         </h2>
         <p className="text-sm sm:text-base text-vintage-brown mb-6">
-          Thank you for booking with Iron & Oil. We look forward to seeing you!
+          Gracias por reservar con Ezcaray Custom Bikes. ¡Te esperamos en el taller!
         </p>
         <div className="bg-vintage-cream p-4 sm:p-6 text-left max-w-md mx-auto text-sm sm:text-base">
-          <h4 className="font-serif font-semibold text-vintage-darkBrown mb-3">Appointment Details</h4>
-          <p><strong>Motorcycle:</strong> {bookingData.brand} {bookingData.model}</p>
-          <p><strong>Service:</strong> {selectedService?.name}</p>
-          <p><strong>Date:</strong> {new Date(bookingData.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
-          <p><strong>Time:</strong> {bookingData.time}</p>
-          <p><strong>Contact:</strong> {bookingData.name}</p>
+          <h4 className="font-serif font-semibold text-vintage-darkBrown mb-3">Detalles de la Cita</h4>
+          <p><strong>Moto:</strong> {bookingData.brand} {bookingData.model}</p>
+          <p><strong>Servicio:</strong> {selectedService?.name}</p>
+          <p><strong>Fecha:</strong> {formatBookingDate(bookingData.date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+          <p><strong>Hora:</strong> {bookingData.time}</p>
+          <p><strong>Contacto:</strong> {bookingData.name}</p>
         </div>
         <p className="mt-6 text-sm text-vintage-tan">
-          A confirmation email has been sent to {bookingData.email}
+          Hemos enviado un correo de confirmación a {bookingData.email}
         </p>
       </div>
     );
@@ -155,21 +166,22 @@ export default function BookingForm() {
         {step === 1 && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <ShipWheel className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" />
-              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Select Your Motorcycle</h2>
+              <ShipWheel className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" aria-hidden="true" />
+              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Selecciona Tu Moto</h2>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                  Motorcycle Brand
+                <label htmlFor="brand" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                  Marca de la Moto
                 </label>
                 <select
+                  id="brand"
                   value={bookingData.brand}
                   onChange={(e) => updateData("brand", e.target.value)}
                   className="vintage-select"
                 >
-                  <option value="">Select a brand...</option>
+                  <option value="">Selecciona una marca...</option>
                   {bikeBrands.map((brand) => (
                     <option key={brand.name} value={brand.name}>
                       {brand.name}
@@ -180,16 +192,17 @@ export default function BookingForm() {
               
               {bookingData.brand && (
                 <div>
-                  <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                    Model
+                  <label htmlFor="model" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                    Modelo
                   </label>
                   <select
+                    id="model"
                     value={bookingData.model}
                     onChange={(e) => updateData("model", e.target.value)}
                     className="vintage-select"
                     disabled={!selectedBrand}
                   >
-                    <option value="">Select a model...</option>
+                    <option value="">Selecciona un modelo...</option>
                     {selectedBrand?.models.map((model) => (
                       <option key={model} value={model}>
                         {model}
@@ -205,8 +218,8 @@ export default function BookingForm() {
         {step === 2 && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <Wrench className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" />
-              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Choose Service</h2>
+              <Wrench className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" aria-hidden="true" />
+              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Elige el Servicio</h2>
             </div>
             
             <div className="space-y-3">
@@ -236,7 +249,7 @@ export default function BookingForm() {
                         <span className="font-serif text-sm sm:text-base text-vintage-gold font-bold whitespace-nowrap">{service.price}</span>
                       </div>
                       <p className="text-xs sm:text-sm text-vintage-brown mt-1">{service.description}</p>
-                      <p className="text-xs text-vintage-tan mt-1">Duration: {service.duration}</p>
+                      <p className="text-xs text-vintage-tan mt-1">Duración: {service.duration}</p>
                     </div>
                   </div>
                 </label>
@@ -244,15 +257,17 @@ export default function BookingForm() {
             </div>
 
             <div className="mt-6">
-              <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                Additional Notes (optional)
+              <label htmlFor="description" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                Notas Adicionales (opcional)
               </label>
               <textarea
+                id="description"
+                name="description"
                 value={bookingData.description}
                 onChange={(e) => updateData("description", e.target.value)}
                 className="vintage-input resize-none"
                 rows={3}
-                placeholder="Describe any specific issues or requests..."
+                placeholder="Describe cualquier problema o petición concreta…"
               />
             </div>
           </div>
@@ -261,17 +276,19 @@ export default function BookingForm() {
         {step === 3 && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <Calendar className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" />
-              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Pick Date & Time</h2>
+              <Calendar className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" aria-hidden="true" />
+              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Elige Fecha y Hora</h2>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                  Preferred Date
+                <label htmlFor="date" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                  Fecha Preferida
                 </label>
                 <input
+                  id="date"
                   type="date"
+                  name="date"
                   value={bookingData.date}
                   onChange={(e) => updateData("date", e.target.value)}
                   min={getToday()}
@@ -280,10 +297,10 @@ export default function BookingForm() {
               </div>
               
               <div>
-                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                  Preferred Time
+                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2" id="preferred-time-label">
+                  Hora Preferida
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2" role="group" aria-labelledby="preferred-time-label">
                   {timeSlots.map((time) => (
                     <button
                       key={time}
@@ -307,18 +324,21 @@ export default function BookingForm() {
         {step === 4 && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <User className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" />
-              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Your Details</h2>
+              <User className="w-5 sm:w-6 h-5 sm:h-6 text-vintage-gold flex-shrink-0" aria-hidden="true" />
+              <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown">Tus Datos</h2>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                  Full Name
+                <label htmlFor="name" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                  Nombre Completo
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-vintage-tan" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-vintage-tan" aria-hidden="true" />
                   <input
+                    id="name"
+                    name="name"
+                    autoComplete="name"
                     type="text"
                     value={bookingData.name}
                     onChange={(e) => updateData("name", e.target.value)}
@@ -329,12 +349,16 @@ export default function BookingForm() {
               </div>
               
               <div>
-                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                  Email Address
+                <label htmlFor="email" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                  Correo Electrónico
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-vintage-tan" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-vintage-tan" aria-hidden="true" />
                   <input
+                    id="email"
+                    name="email"
+                    autoComplete="email"
+                    spellCheck={false}
                     type="email"
                     value={bookingData.email}
                     onChange={(e) => updateData("email", e.target.value)}
@@ -345,12 +369,15 @@ export default function BookingForm() {
               </div>
               
               <div>
-                <label className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
-                  Phone Number
+                <label htmlFor="phone" className="block font-serif text-sm font-semibold text-vintage-brown mb-2">
+                  Teléfono
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-vintage-tan" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-vintage-tan" aria-hidden="true" />
                   <input
+                    id="phone"
+                    name="phone"
+                    autoComplete="tel"
                     type="tel"
                     value={bookingData.phone}
                     onChange={(e) => updateData("phone", e.target.value)}
@@ -365,44 +392,44 @@ export default function BookingForm() {
 
         {step === 5 && (
           <div>
-            <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown mb-6">Confirm Your Booking</h2>
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-vintage-darkBrown mb-6">Confirma Tu Reserva</h2>
             
             <div className="bg-vintage-cream p-4 sm:p-6 space-y-3 sm:space-y-4 text-sm sm:text-base">
               <div className="flex justify-between gap-2 border-b border-vintage-tan pb-3">
-                <span className="text-vintage-brown">Motorcycle</span>
+                <span className="text-vintage-brown">Moto</span>
                 <span className="font-semibold text-vintage-darkBrown text-right">{bookingData.brand} {bookingData.model}</span>
               </div>
               <div className="flex justify-between gap-2 border-b border-vintage-tan pb-3">
-                <span className="text-vintage-brown">Service</span>
+                <span className="text-vintage-brown">Servicio</span>
                 <span className="font-semibold text-vintage-darkBrown text-right">{selectedService?.name}</span>
               </div>
               <div className="flex justify-between gap-2 border-b border-vintage-tan pb-3">
-                <span className="text-vintage-brown">Date</span>
+                <span className="text-vintage-brown">Fecha</span>
                 <span className="font-semibold text-vintage-darkBrown text-right">
-                  {bookingData.date && new Date(bookingData.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                  {bookingData.date && formatBookingDate(bookingData.date, { weekday: "short", month: "short", day: "numeric" })}
                 </span>
               </div>
               <div className="flex justify-between gap-2 border-b border-vintage-tan pb-3">
-                <span className="text-vintage-brown">Time</span>
+                <span className="text-vintage-brown">Hora</span>
                 <span className="font-semibold text-vintage-darkBrown">{bookingData.time}</span>
               </div>
               <div className="flex justify-between gap-2 border-b border-vintage-tan pb-3">
-                <span className="text-vintage-brown">Name</span>
+                <span className="text-vintage-brown">Nombre</span>
                 <span className="font-semibold text-vintage-darkBrown text-right">{bookingData.name}</span>
               </div>
               <div className="flex justify-between gap-2 border-b border-vintage-tan pb-3">
-                <span className="text-vintage-brown">Email</span>
+                <span className="text-vintage-brown">Correo</span>
                 <span className="font-semibold text-vintage-darkBrown text-right break-all">{bookingData.email}</span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-vintage-brown">Phone</span>
+                <span className="text-vintage-brown">Teléfono</span>
                 <span className="font-semibold text-vintage-darkBrown">{bookingData.phone}</span>
               </div>
             </div>
             
             {bookingData.description && (
               <div className="mt-4">
-                <span className="text-vintage-brown text-xs sm:text-sm">Notes:</span>
+                <span className="text-vintage-brown text-xs sm:text-sm">Notas:</span>
                 <p className="text-sm sm:text-base text-vintage-darkBrown">{bookingData.description}</p>
               </div>
             )}
@@ -412,7 +439,7 @@ export default function BookingForm() {
         <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8 pt-6 border-t border-vintage-tan">
           {step > 1 ? (
             <button onClick={prevStep} className="vintage-button-secondary flex items-center justify-center gap-2 text-sm sm:text-base order-2 sm:order-1">
-              <ChevronLeft className="w-4 h-4" /> Back
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Atrás
             </button>
           ) : (
             <div className="order-2 sm:order-1" />
@@ -424,7 +451,7 @@ export default function BookingForm() {
               disabled={!canProceed()}
               className={`vintage-button flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2 ${!canProceed() ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Next <ChevronRight className="w-4 h-4" />
+              Siguiente <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           ) : (
             <button
@@ -433,16 +460,19 @@ export default function BookingForm() {
               className={`vintage-button flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {isLoading ? (
-                <>Sending...</>
+                <>Enviando…</>
               ) : (
-                <><Check className="w-4 h-4" /> Confirm Booking</>
+                <><Check className="w-4 h-4" aria-hidden="true" /> Confirmar Reserva</>
               )}
             </button>
           )}
         </div>
 
         {error && (
-          <div className="mt-4 p-3 sm:p-4 bg-red-100 border border-red-400 text-red-700 rounded text-sm sm:text-base">
+          <div
+            className="mt-4 p-3 sm:p-4 bg-red-100 border border-red-400 text-red-700 rounded text-sm sm:text-base"
+            aria-live="polite"
+          >
             {error}
           </div>
         )}
